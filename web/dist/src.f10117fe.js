@@ -117,32 +117,115 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"src/views/UserForm.ts":[function(require,module,exports) {
+})({"src/views/View.ts":[function(require,module,exports) {
 "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.View = void 0;
+
+var View =
+/** @class */
+function () {
+  function View(parent, model) {
+    this.parent = parent;
+    this.model = model;
+    this.bindModel();
+  }
+
+  View.prototype.bindModel = function () {
+    var _this = this;
+
+    this.model.on('change', function () {
+      _this.render();
+    });
+  };
+
+  View.prototype.bindEvents = function (fragment) {
+    var eventsMap = this.eventsMap();
+
+    var _loop_1 = function _loop_1(eventKey) {
+      var _a = eventKey.split(':'),
+          eventName = _a[0],
+          selector = _a[1];
+
+      fragment.querySelectorAll(selector).forEach(function (element) {
+        element.addEventListener(eventName, eventsMap[eventKey]);
+      });
+    };
+
+    for (var eventKey in eventsMap) {
+      _loop_1(eventKey);
+    }
+  };
+
+  View.prototype.render = function () {
+    this.parent.innerHTML = '';
+    var templateElement = document.createElement('template');
+    templateElement.innerHTML = this.template();
+    console.log(templateElement);
+    this.bindEvents(templateElement.content);
+    this.parent.append(templateElement.content);
+  };
+
+  return View;
+}();
+
+exports.View = View;
+},{}],"src/views/UserForm.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (b.hasOwnProperty(p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.UserForm = void 0;
 
+var View_1 = require("./View");
+
 var UserForm =
 /** @class */
-function () {
-  function UserForm(parent, model) {
-    var _this = this;
+function (_super) {
+  __extends(UserForm, _super);
 
-    this.parent = parent;
-    this.model = model;
+  function UserForm() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
 
-    this.onSetAgeClick = function () {
-      console.log('Set Age Clicked!');
+    _this.onSaveClick = function () {
+      _this.model.save();
+    };
 
+    _this.onSetAgeClick = function () {
       _this.model.setRandomAge();
     };
 
-    this.onSetNameClick = function () {
-      console.log('Set Name Clicked!');
-
+    _this.onSetNameClick = function () {
       var input = _this.parent.querySelector('input');
 
       if (input) {
@@ -156,73 +239,26 @@ function () {
       }
     };
 
-    this.bindModel();
+    return _this;
   }
-
-  UserForm.prototype.bindModel = function () {
-    var _this = this;
-
-    this.model.on('change', function () {
-      _this.render();
-    });
-  };
 
   UserForm.prototype.eventsMap = function () {
     return {
-      // 'click:button': this.onButtonClick,
-      // 'mouseenter:h1': this.onHoverHeader,
       'click:.set-age': this.onSetAgeClick,
-      'click:.set-name': this.onSetNameClick
+      'click:.set-name': this.onSetNameClick,
+      'click:.save-model': this.onSaveClick
     };
-  };
-
-  UserForm.prototype.onHoverHeader = function () {
-    console.log('H1 hovered!');
-  };
-
-  UserForm.prototype.onButtonClick = function () {
-    console.log('Button clicked!');
   };
 
   UserForm.prototype.template = function () {
-    return "\n        <div>\n          <h1> User Form </h1>\n          <div> User name : " + this.model.get('name') + "</div>\n          <div> User age : " + this.model.get('age') + "</div>\n          <input />\n          <button> Click </button>\n          <button class=\"set-name\"> Change Name </button>\n          <button class=\"set-age\"> Set Random Age </button>\n        </div>\n    ";
-  };
-
-  UserForm.prototype.bindEvents = function (fragment) {
-    var eventsMap = this.eventsMap();
-
-    var _loop_1 = function _loop_1(eventKey) {
-      var _a = eventKey.split(':'),
-          eventName = _a[0],
-          selector = _a[1];
-
-      fragment.querySelectorAll(selector).forEach(function (element) {
-        // console.log(element);
-        // console.log(eventName);
-        // console.log(eventsMap[eventKey]);
-        element.addEventListener(eventName, eventsMap[eventKey]);
-      });
-    };
-
-    for (var eventKey in eventsMap) {
-      _loop_1(eventKey);
-    }
-  };
-
-  UserForm.prototype.render = function () {
-    this.parent.innerHTML = '';
-    var templateElement = document.createElement('template');
-    templateElement.innerHTML = this.template();
-    console.log(templateElement);
-    this.bindEvents(templateElement.content);
-    this.parent.append(templateElement.content);
+    return "\n        <div>\n          <input placeholder =\"" + this.model.get('name') + "\" />\n          <button> Click </button>\n          <button class=\"set-name\"> Change Name </button>\n          <button class=\"set-age\"> Set Random Age </button>\n          <button class=\"save-model\"> Save User </button>\n        </div>\n    ";
   };
 
   return UserForm;
-}();
+}(View_1.View);
 
 exports.UserForm = UserForm;
-},{}],"src/models/Model.ts":[function(require,module,exports) {
+},{"./View":"src/views/View.ts"}],"src/models/Model.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2334,7 +2370,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49606" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51325" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
