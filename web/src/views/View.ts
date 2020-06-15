@@ -1,12 +1,12 @@
-import { User } from '../models/User';
+import { Model } from '../models/Model';
 
-export abstract class View {
-  constructor(public parent: Element, public model: User) {
+export abstract class View<T extends Model<K>, K> {
+  constructor(public parent: Element, public model: T) {
     this.bindModel();
   }
 
   abstract eventsMap(): { [key: string]: () => void };
-  // abstract template(): string;
+  abstract template(): string;
 
   bindModel(): void {
     this.model.on('change', () => {
@@ -20,10 +20,6 @@ export abstract class View {
     for (let eventKey in eventsMap) {
       const [eventName, selector] = eventKey.split(':');
       fragment.querySelectorAll(selector).forEach((element) => {
-        // console.log(element);
-        // console.log(eventName);
-        // console.log(eventsMap[eventKey]);
-
         element.addEventListener(eventName, eventsMap[eventKey]);
       });
     }
